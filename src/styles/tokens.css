@@ -19,8 +19,12 @@
   --sharp-soft: #dfcfca;
   --danger: #814c42;
   --shadow: rgba(42, 40, 35, 0.12);
-  --mono: "SFMono-Regular", "Roboto Mono", "Cascadia Mono", Consolas, monospace;
-  --sans: Inter, "Noto Sans JP", "Yu Gothic UI", Meiryo, system-ui, sans-serif;
+  --font-display: "kozuka-gothic-pr6n", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
+  --font-ui: "din-2014", "kozuka-gothic-pr6n", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
+  --font-numeric: "din-2014-narrow", "din-2014", "SFMono-Regular", "Cascadia Mono", Consolas, monospace;
+  --font-label: "din-2014-narrow", "din-2014", "kozuka-gothic-pr6n", sans-serif;
+  --mono: var(--font-numeric);
+  --sans: var(--font-ui);
   --nav-height: 70px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --radius: 2px;

@@ -57,9 +57,14 @@ h1, h2, p { margin-top: 0; }
 .eyebrow {
   display: block;
   color: var(--muted);
-  font: 700 0.68rem/1.2 var(--mono);
+  font: 700 0.68rem/1.2 var(--font-label);
   letter-spacing: 0.14em;
 }
+
+h1, h2, h3 { font-family: var(--font-display); }
+
+.wf-loading body { opacity: 0.995; }
+.wf-active body, .wf-inactive body { opacity: 1; }
 
 .primary-button, .secondary-button, .danger-button {
   min-height: 46px;

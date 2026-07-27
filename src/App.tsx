@@ -51,7 +51,7 @@ export default function App() {
     <div className="app-shell">
       <div className="background-grid" aria-hidden="true" />
       {page === 'tuner' && <TunerPage settings={settings} mode={mode} preset={activePreset} selectedStringId={selectedStringId} onModeChange={changeMode} onStringChange={(id) => { setSelectedStringId(id); if (settings.autoString) setSettings({ ...settings, autoString: false }) }} onOpenSettings={() => setPage('settings')} />}
-      {page === 'presets' && <PresetsPage customPresets={customPresets} onCustomPresetsChange={setCustomPresets} onSelect={selectPreset} />}
+      {page === 'presets' && <PresetsPage customPresets={customPresets} activePresetId={activePresetId} onCustomPresetsChange={setCustomPresets} onSelect={selectPreset} />}
       {page === 'settings' && <SettingsPage settings={settings} onChange={setSettings} onReset={() => setSettings(resetSettings())} />}
       <BottomNavigation page={page} onChange={setPage} />
     </div>

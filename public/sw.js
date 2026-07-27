@@ -1,5 +1,14 @@
-const CACHE_NAME = 'quiet-tuner-v1'
-const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-512.png']
+const BASE_PATH = '/Tuner/'
+const CACHE_NAME = 'quiet-tuner-v2'
+const APP_SHELL = [
+  BASE_PATH,
+  `${BASE_PATH}index.html`,
+  `${BASE_PATH}manifest.webmanifest`,
+  `${BASE_PATH}icons/icon.svg`,
+  `${BASE_PATH}icons/icon-192.png`,
+  `${BASE_PATH}icons/icon-512.png`,
+  `${BASE_PATH}icons/icon-maskable-512.png`,
+]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()))
@@ -15,6 +24,6 @@ self.addEventListener('fetch', (event) => {
     caches.match(event.request).then((cached) => cached || fetch(event.request).then((response) => {
       if (response.ok) caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()))
       return response
-    }).catch(() => event.request.mode === 'navigate' ? caches.match('/') : undefined)),
+    }).catch(() => event.request.mode === 'navigate' ? caches.match(BASE_PATH) : undefined)),
   )
 })

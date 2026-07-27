@@ -31,10 +31,10 @@ export function MicrophonePrompt({ status, error, onStart }: { status: Microphon
   return (
     <section className={`microphone-prompt${denied || unsupported || status === 'error' ? ' has-error' : ''}`} aria-labelledby="microphone-title">
       <div className="prompt-icon" aria-hidden="true">◉</div>
-      <div>
+      <div className="prompt-copy">
         <span className="eyebrow">LOCAL AUDIO PROCESSING</span>
         <h2 id="microphone-title">マイクを有効にする</h2>
-        <p>楽器の音程を検出するためにマイクを使用します。音声データは端末内だけで処理され、録音、保存、外部送信は行われません。</p>
+        <p className="prompt-description">楽器の音程を検出するためにマイクを使用します。音声は端末内だけで処理し、録音・保存・外部送信は行いません。</p>
         {error && <p className="error-message" role="alert">{error}</p>}
         {denied && (
           <ol className="permission-steps">
@@ -45,9 +45,12 @@ export function MicrophonePrompt({ status, error, onStart }: { status: Microphon
         )}
         {unsupported && <p>Chrome、Safari、Edgeなど、Web Audioとマイク入力に対応したブラウザで開いてください。</p>}
         {!denied && !unsupported && (
-          <button className="primary-button" type="button" onClick={onStart} disabled={status === 'requesting'}>
-            {status === 'requesting' ? '接続しています…' : 'マイクを使用する'}
-          </button>
+          <div className="prompt-action">
+            <button className="primary-button mic-primary" type="button" onClick={onStart} disabled={status === 'requesting'}>
+              <span aria-hidden="true">◉</span>{status === 'requesting' ? '接続しています…' : 'マイクを使用する'}
+            </button>
+            <small>タップするとブラウザの権限確認が表示されます</small>
+          </div>
         )}
       </div>
     </section>
@@ -125,12 +128,17 @@ export function TunerPage({ settings, mode, preset, selectedStringId, onModeChan
 
           <section className="pitch-panel" aria-label="検出結果">
             <NoteDisplay note={reading?.note ?? '—'} octave={reading?.octave ?? null} target={reading?.targetLabel} active={Boolean(reading)} />
-            <div className="numeric-readout">
+            <div className="deviation-readout">
+              <span>DEVIATION</span>
+              {settings.showCents
+                ? <strong>{reading ? `${reading.cents >= 0 ? '+' : '−'}${Math.abs(reading.cents).toFixed(1)}` : '—.—'}<small> cents</small></strong>
+                : <strong className="value-hidden">—</strong>}
+              <StatusLabel status={status} cents={cents} />
+            </div>
+            <div className="auxiliary-readout">
               {settings.showFrequency && <div><span>FREQUENCY</span><strong>{reading ? reading.frequency.toFixed(2) : '—.—'}<small> Hz</small></strong></div>}
-              {settings.showCents && <div><span>DEVIATION</span><strong>{reading ? `${reading.cents >= 0 ? '+' : '−'}${Math.abs(reading.cents).toFixed(1)}` : '—.—'}<small> cents</small></strong></div>}
               <div><span>CONFIDENCE</span><strong>{reading ? Math.round(reading.clarity * 100) : 0}<small> %</small></strong></div>
             </div>
-            <StatusLabel status={status} cents={cents} />
           </section>
 
           <TuningMeter cents={reading?.cents ?? null} range={settings.meterRange} reverse={settings.reverseMeter} inTune={isInTune} />

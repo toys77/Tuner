@@ -25,18 +25,27 @@ export function SettingsPage({ settings, onChange, onReset }: SettingsPageProps)
       </section>
       <section className="settings-group">
         <div className="section-heading"><h2>DETECTION</h2><span>検出と表示</span></div>
-        <div className="settings-list">
-          <label className="setting-control"><span><strong>適正判定幅</strong><small>±{settings.tolerance.inTune} cents</small></span><input type="range" min="1" max="8" step="1" value={settings.tolerance.inTune} onChange={(event) => update('tolerance', { ...settings.tolerance, inTune: Number(event.target.value), near: Math.max(settings.tolerance.near, Number(event.target.value) + 1) })} /></label>
-          <label className="setting-control"><span><strong>ほぼ適正の幅</strong><small>±{settings.tolerance.near} cents</small></span><input type="range" min={settings.tolerance.inTune + 1} max="12" step="1" value={settings.tolerance.near} onChange={(event) => update('tolerance', { ...settings.tolerance, near: Number(event.target.value), slight: Math.max(settings.tolerance.slight, Number(event.target.value) + 1) })} /></label>
-          <label className="setting-control"><span><strong>少し調整の幅</strong><small>±{settings.tolerance.slight} cents</small></span><input type="range" min={settings.tolerance.near + 1} max="30" step="1" value={settings.tolerance.slight} onChange={(event) => update('tolerance', { ...settings.tolerance, slight: Number(event.target.value) })} /></label>
-          <label className="setting-control"><span><strong>入力感度</strong><small>{settings.inputSensitivity.toFixed(1)}×</small></span><input type="range" min="0.5" max="2" step="0.1" value={settings.inputSensitivity} onChange={(event) => update('inputSensitivity', Number(event.target.value))} /></label>
-          <label className="setting-control"><span><strong>平滑化</strong><small>{Math.round(settings.smoothing * 100)}%</small></span><input type="range" min="0.15" max="0.9" step="0.05" value={settings.smoothing} onChange={(event) => update('smoothing', Number(event.target.value))} /></label>
-          <label className="setting-control"><span><strong>無音判定</strong><small>{settings.silenceTimeout} ms</small></span><input type="range" min="300" max="2000" step="100" value={settings.silenceTimeout} onChange={(event) => update('silenceTimeout', Number(event.target.value))} /></label>
-          <label className="select-row"><span><strong>メーター範囲</strong><small>中央付近の感度</small></span><select value={settings.meterRange} onChange={(event) => update('meterRange', Number(event.target.value) as 25 | 50)}><option value="50">±50 cents</option><option value="25">±25 cents</option></select></label>
-          <Toggle label="自動弦判定" description="対象プリセットから最も近い弦を選択" checked={settings.autoString} onChange={(value) => update('autoString', value)} />
-          <Toggle label="セント値を表示" checked={settings.showCents} onChange={(value) => update('showCents', value)} />
-          <Toggle label="周波数を表示" checked={settings.showFrequency} onChange={(value) => update('showFrequency', value)} />
-          <Toggle label="メーター方向を反転" checked={settings.reverseMeter} onChange={(value) => update('reverseMeter', value)} />
+        <div className="settings-list detection-settings">
+          <div className="setting-subgroup">
+            <div className="setting-subgroup-title"><span>01</span><div><strong>判定幅</strong><small>TOLERANCE</small></div></div>
+            <label className="setting-control primary-setting"><span><strong>適正判定幅</strong><small>±{settings.tolerance.inTune} cents</small></span><input type="range" min="1" max="8" step="1" value={settings.tolerance.inTune} onChange={(event) => update('tolerance', { ...settings.tolerance, inTune: Number(event.target.value), near: Math.max(settings.tolerance.near, Number(event.target.value) + 1) })} /></label>
+            <label className="setting-control"><span><strong>ほぼ適正の幅</strong><small>±{settings.tolerance.near} cents</small></span><input type="range" min={settings.tolerance.inTune + 1} max="12" step="1" value={settings.tolerance.near} onChange={(event) => update('tolerance', { ...settings.tolerance, near: Number(event.target.value), slight: Math.max(settings.tolerance.slight, Number(event.target.value) + 1) })} /></label>
+            <label className="setting-control"><span><strong>少し調整の幅</strong><small>±{settings.tolerance.slight} cents</small></span><input type="range" min={settings.tolerance.near + 1} max="30" step="1" value={settings.tolerance.slight} onChange={(event) => update('tolerance', { ...settings.tolerance, slight: Number(event.target.value) })} /></label>
+          </div>
+          <div className="setting-subgroup">
+            <div className="setting-subgroup-title"><span>02</span><div><strong>入力 / 解析</strong><small>INPUT & ANALYSIS</small></div></div>
+            <label className="setting-control primary-setting"><span><strong>入力感度</strong><small>{settings.inputSensitivity.toFixed(1)}×</small></span><input type="range" min="0.5" max="2" step="0.1" value={settings.inputSensitivity} onChange={(event) => update('inputSensitivity', Number(event.target.value))} /></label>
+            <label className="setting-control"><span><strong>平滑化</strong><small>{Math.round(settings.smoothing * 100)}%</small></span><input type="range" min="0.15" max="0.9" step="0.05" value={settings.smoothing} onChange={(event) => update('smoothing', Number(event.target.value))} /></label>
+            <label className="setting-control"><span><strong>無音判定</strong><small>{settings.silenceTimeout} ms</small></span><input type="range" min="300" max="2000" step="100" value={settings.silenceTimeout} onChange={(event) => update('silenceTimeout', Number(event.target.value))} /></label>
+            <Toggle label="自動弦判定" description="対象プリセットから最も近い弦を選択" checked={settings.autoString} onChange={(value) => update('autoString', value)} />
+          </div>
+          <div className="setting-subgroup">
+            <div className="setting-subgroup-title"><span>03</span><div><strong>表示</strong><small>DISPLAY</small></div></div>
+            <label className="select-row primary-setting"><span><strong>メーター範囲</strong><small>中央付近の感度</small></span><select value={settings.meterRange} onChange={(event) => update('meterRange', Number(event.target.value) as 25 | 50)}><option value="50">±50 cents</option><option value="25">±25 cents</option></select></label>
+            <Toggle label="セント値を表示" checked={settings.showCents} onChange={(value) => update('showCents', value)} />
+            <Toggle label="周波数を表示" checked={settings.showFrequency} onChange={(value) => update('showFrequency', value)} />
+            <Toggle label="メーター方向を反転" checked={settings.reverseMeter} onChange={(value) => update('reverseMeter', value)} />
+          </div>
         </div>
       </section>
       <section className="settings-group">

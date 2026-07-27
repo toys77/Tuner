@@ -289,3 +289,267 @@
   .console-actions { position: absolute; right: 12px; top: 48px; }
   .wake-status { display: none; }
 }
+
+/* Density and hierarchy refinement */
+.system-title strong,
+.mode-strip,
+.eyebrow,
+.section-heading h2,
+.config-version,
+.bottom-nav button,
+.preset-card > span,
+.preset-main > span,
+.selected-indicator,
+.setting-subgroup-title small {
+  font-family: var(--font-label);
+}
+
+.note-glyph,
+.numeric-readout,
+.deviation-readout,
+.auxiliary-readout,
+.reference-number,
+.meter-tick,
+.input-level,
+.target-readout,
+.string-number {
+  font-family: var(--font-numeric);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.page-header h1,
+.preset-editor h2,
+.microphone-prompt h2,
+.privacy-panel h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.bottom-nav button {
+  transition: color 150ms ease, background-color 150ms ease, transform 150ms ease;
+}
+.bottom-nav button:active { transform: translateY(1px); background: var(--surface-muted); }
+.bottom-nav button.active { background: color-mix(in srgb, var(--surface-muted) 72%, transparent); }
+.bottom-nav button.active::before { left: 14%; right: 14%; height: 4px; }
+.bottom-nav button.active span { color: var(--ink-strong); transform: scale(1.08); }
+
+.tuner-page { padding-top: max(8px, env(safe-area-inset-top)); }
+.system-header { min-height: 44px; }
+.mode-strip { min-height: 45px; }
+.mode-strip label span,
+.mode-strip > div span { color: var(--faint); }
+
+.microphone-prompt {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  width: min(100%, 710px);
+  margin: clamp(16px, 3vh, 28px) auto 0;
+  padding: clamp(20px, 4vw, 34px);
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: clamp(14px, 3vw, 22px);
+  box-shadow: 5px 5px 0 color-mix(in srgb, var(--line) 13%, transparent);
+  overflow: visible;
+}
+.microphone-prompt .prompt-copy { min-width: 0; }
+.microphone-prompt h2 { margin: 4px 0 7px; line-height: 1.25; }
+.microphone-prompt .prompt-description { max-width: 55ch; margin-bottom: 12px; line-height: 1.65; }
+.microphone-prompt .prompt-icon { width: 46px; height: 46px; }
+.prompt-action { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.prompt-action .mic-primary {
+  min-width: min(280px, 100%);
+  min-height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 0.84rem;
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--line) 32%, transparent);
+}
+.prompt-action .mic-primary span { font-size: 0.95rem; }
+.prompt-action > small { max-width: 180px; color: var(--faint); font-size: 0.66rem; line-height: 1.45; }
+
+.tuner-console {
+  grid-template-rows: none;
+  grid-auto-rows: auto;
+  align-content: start;
+  gap: clamp(3px, 0.65vh, 7px);
+  padding-top: 5px;
+}
+.preset-row { min-height: 34px; }
+.pitch-panel {
+  min-height: clamp(150px, 24vh, 210px);
+  grid-template-columns: minmax(155px, 1.28fr) minmax(145px, 1fr) minmax(105px, 0.65fr);
+}
+.note-display { padding: clamp(8px, 1.3vh, 13px); }
+.note-glyph { font-size: clamp(5.2rem, 17vh, 9.5rem); letter-spacing: -0.09em; }
+.note-display .eyebrow { color: var(--muted); }
+.target-readout { padding-top: 6px; }
+
+.deviation-readout {
+  min-width: 0;
+  padding: clamp(9px, 1.8vh, 16px) clamp(10px, 2vw, 18px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--line-soft);
+  text-align: center;
+}
+.deviation-readout > span,
+.auxiliary-readout span {
+  color: var(--faint);
+  font: 700 0.56rem/1.2 var(--font-label);
+  letter-spacing: 0.12em;
+}
+.deviation-readout > strong {
+  margin: 5px 0 8px;
+  color: var(--ink-strong);
+  font: 700 clamp(2.1rem, 6.5vh, 3.8rem)/0.95 var(--font-numeric);
+  white-space: nowrap;
+}
+.deviation-readout > strong small { color: var(--muted); font-size: 0.32em; letter-spacing: 0; }
+.deviation-readout .value-hidden { color: var(--faint); }
+.deviation-readout .pitch-status {
+  width: 100%;
+  min-height: 36px;
+  padding: 5px 4px 0;
+  flex-direction: row;
+  gap: 7px;
+  border: 0;
+  border-top: 1px solid var(--line-soft);
+}
+.deviation-readout .pitch-status .status-symbol { margin: 0; font-size: 0.85rem; }
+.deviation-readout .pitch-status strong { font-size: clamp(0.82rem, 2.2vw, 1rem); }
+.deviation-readout .pitch-status small { margin: 0; font-size: 0.48rem; }
+
+.auxiliary-readout { display: grid; align-content: center; }
+.auxiliary-readout > div { padding: clamp(9px, 1.7vh, 14px) clamp(9px, 1.7vw, 14px); border-bottom: 1px solid var(--line-soft); }
+.auxiliary-readout > div:last-child { border-bottom: 0; }
+.auxiliary-readout strong { display: block; margin-top: 3px; color: var(--ink-strong); font: 700 clamp(0.95rem, 2.7vh, 1.28rem)/1 var(--font-numeric); white-space: nowrap; }
+.auxiliary-readout strong small { color: var(--muted); font-size: 0.58em; }
+
+.tuning-meter { padding-top: 2px; }
+.meter-scale { height: clamp(42px, 6.2vh, 56px); }
+.meter-labels { padding-top: 2px; }
+.input-level { min-height: 33px; opacity: 0.86; }
+.input-heading { font-size: 0.52rem; }
+.level-track { height: 5px; }
+.input-level p { color: var(--ink); padding-left: 7px; border-left: 2px solid var(--sharp); }
+.console-actions { align-items: stretch; gap: 6px; margin-top: 1px; }
+.console-actions > .mic-stop,
+.console-actions > .tone-panel { flex: 1 1 0; }
+.mic-stop,
+.tone-panel summary { width: 100%; min-height: 44px; height: 44px; }
+.tone-panel summary { display: flex; align-items: center; justify-content: center; padding: 8px; }
+
+.content-page,
+.preset-editor { padding-top: max(13px, env(safe-area-inset-top)); }
+.page-header,
+.preset-editor > header { min-height: 66px; }
+.content-page section { margin-top: 20px; }
+
+.preset-card {
+  min-height: 84px;
+  padding: 12px 14px;
+  transition: transform 140ms ease, border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+.preset-card:hover { box-shadow: 3px 3px 0 color-mix(in srgb, var(--line) 18%, transparent); }
+.preset-card:active,
+.preset-main:active { transform: translateY(1px); }
+.preset-card > span,
+.preset-main > span { color: var(--faint); font-size: 0.52rem; }
+.preset-card > strong,
+.preset-main > strong { margin: 4px 0 3px; font-size: 1.02rem; }
+.preset-card > small,
+.preset-main > small { color: var(--muted); font-size: 0.58rem; }
+.preset-card.is-selected {
+  border-color: var(--tune);
+  background: color-mix(in srgb, var(--tune-soft) 62%, var(--surface));
+  box-shadow: inset 4px 0 0 var(--tune);
+}
+.selected-indicator {
+  position: absolute;
+  top: 10px;
+  right: 32px;
+  color: var(--tune);
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+}
+.preset-main { position: relative; }
+.preset-card.custom .selected-indicator { right: 12px; }
+
+.editor-fields { gap: 8px; margin: 15px 0; }
+.string-editor { padding: 9px 11px; }
+.string-editor-head { padding-bottom: 6px; }
+.string-row { gap: 6px; padding: 3px 0; }
+.editor-fields input,
+.string-row input,
+.string-row select { margin-top: 2px; }
+.preset-editor > footer { margin-top: 13px; }
+
+.detection-settings { background: transparent; }
+.setting-subgroup { border-bottom: 1px solid var(--line); }
+.setting-subgroup:last-child { border-bottom: 0; }
+.setting-subgroup-title {
+  min-height: 44px;
+  padding: 7px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: color-mix(in srgb, var(--surface-muted) 48%, transparent);
+}
+.setting-subgroup-title > span { color: var(--faint); font: 700 0.58rem var(--font-numeric); }
+.setting-subgroup-title > div { display: flex; flex-direction: column; }
+.setting-subgroup-title strong { color: var(--ink-strong); font-size: 0.8rem; }
+.setting-subgroup-title small { color: var(--faint); font-size: 0.48rem; letter-spacing: 0.1em; }
+.setting-subgroup > .toggle-row,
+.setting-subgroup > .setting-control,
+.setting-subgroup > .select-row { min-height: 56px; padding-block: 7px; border-bottom: 1px solid var(--line-soft); }
+.setting-subgroup > :last-child { border-bottom: 0; }
+.setting-subgroup .setting-control strong,
+.setting-subgroup .select-row strong,
+.setting-subgroup .toggle-row strong { font-size: 0.78rem; font-weight: 500; }
+.setting-subgroup .primary-setting strong { font-size: 0.88rem; font-weight: 700; }
+.setting-subgroup small { color: var(--faint); }
+.settings-page .settings-group { margin-top: 18px; }
+
+@media (max-width: 600px) {
+  .tuner-page { padding-inline: 9px; }
+  .microphone-prompt { grid-template-columns: 42px minmax(0, 1fr); margin-top: 14px; padding: 18px 16px; }
+  .microphone-prompt .prompt-icon { width: 42px; height: 42px; }
+  .prompt-action { align-items: stretch; flex-direction: column; gap: 7px; }
+  .prompt-action .mic-primary { width: 100%; }
+  .prompt-action > small { max-width: none; }
+
+  .pitch-panel {
+    min-height: 176px;
+    grid-template-columns: minmax(135px, 1.18fr) minmax(145px, 1fr);
+    grid-template-rows: 1fr auto;
+  }
+  .note-display { grid-row: 1 / 3; border-right: 1px solid var(--line-soft); }
+  .note-glyph { font-size: clamp(5.25rem, 14.5vh, 7rem); }
+  .deviation-readout { grid-column: 2; grid-row: 1; padding: 8px 9px; border-right: 0; border-bottom: 1px solid var(--line-soft); }
+  .deviation-readout > strong { margin: 4px 0 5px; font-size: clamp(2rem, 6.2vh, 2.8rem); }
+  .deviation-readout .pitch-status { grid-column: auto; min-height: 31px; padding-top: 4px; border-top: 1px solid var(--line-soft); }
+  .deviation-readout .pitch-status small { display: none; }
+  .auxiliary-readout { grid-column: 2; grid-row: 2; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .auxiliary-readout > div { padding: 7px 8px; border-right: 1px solid var(--line-soft); border-bottom: 0; }
+  .auxiliary-readout > div:last-child { border-right: 0; }
+  .auxiliary-readout strong { font-size: 0.86rem; }
+  .auxiliary-readout strong small { display: block; margin-top: 2px; }
+  .input-level p { font-size: 0.57rem; }
+  .content-page section { margin-top: 16px; }
+  .preset-card { min-height: 78px; }
+  .setting-subgroup-title { min-height: 40px; padding-block: 5px; }
+  .setting-subgroup > .toggle-row,
+  .setting-subgroup > .setting-control,
+  .setting-subgroup > .select-row { min-height: 54px; }
+}
+
+@media (max-width: 390px) {
+  .microphone-prompt { grid-template-columns: 38px minmax(0, 1fr); padding: 15px 13px; }
+  .microphone-prompt .prompt-icon { width: 38px; height: 38px; }
+  .pitch-panel { min-height: 166px; }
+  .note-glyph { font-size: 5rem; }
+  .string-row { padding-block: 2px; }
+}

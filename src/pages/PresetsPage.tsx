@@ -6,6 +6,7 @@ import { duplicateCustomPreset } from '../stores/presetStore'
 
 interface PresetsPageProps {
   customPresets: TuningPreset[]
+  activePresetId: string | null
   onCustomPresetsChange: (presets: TuningPreset[]) => void
   onSelect: (preset: TuningPreset) => void
 }
@@ -72,7 +73,7 @@ function PresetEditor({ initial, onSave, onCancel }: { initial: TuningPreset; on
   )
 }
 
-export function PresetsPage({ customPresets, onCustomPresetsChange, onSelect }: PresetsPageProps) {
+export function PresetsPage({ customPresets, activePresetId, onCustomPresetsChange, onSelect }: PresetsPageProps) {
   const [editing, setEditing] = useState<TuningPreset | null>(null)
   const groups = useMemo(() => ['Guitar', '4-string Bass', '5-string Bass', 'Ukulele'].map((instrument) => ({ instrument, presets: DEFAULT_PRESETS.filter((item) => item.instrument === instrument) })), [])
   const save = (preset: TuningPreset) => {
@@ -84,12 +85,12 @@ export function PresetsPage({ customPresets, onCustomPresetsChange, onSelect }: 
   return (
     <main className="content-page presets-page">
       <header className="page-header"><div><span className="eyebrow">TUNING LIBRARY</span><h1>プリセット</h1></div><button className="primary-button compact" onClick={() => setEditing(newPreset())}>＋ 新規作成</button></header>
-      <section className="custom-section">
+      <section className="custom-section" data-collection="custom">
         <div className="section-heading"><h2>CUSTOM</h2><span>{customPresets.length.toString().padStart(2, '0')} ENTRIES</span></div>
         {customPresets.length === 0 ? <div className="empty-state"><strong>カスタム設定はありません</strong><p>楽器や弦数、各弦の音程を自由に登録できます。</p></div> : (
           <div className="preset-grid">{[...customPresets].sort((a, b) => Number(Boolean(b.favorite)) - Number(Boolean(a.favorite))).map((preset) => (
-            <article className="preset-card custom" key={preset.id}>
-              <button className="preset-main" onClick={() => onSelect(preset)}><span>{preset.instrument}</span><strong>{preset.name}</strong><small>{preset.strings.map((item) => `${item.note}${item.octave}`).join(' · ')}</small></button>
+            <article className={`preset-card custom${activePresetId === preset.id ? ' is-selected' : ''}`} key={preset.id} data-favorite={preset.favorite ? 'true' : 'false'}>
+              <button className="preset-main" onClick={() => onSelect(preset)} aria-current={activePresetId === preset.id ? 'true' : undefined}><span>{preset.instrument}</span><strong>{preset.name}</strong><small>{preset.strings.map((item) => `${item.note}${item.octave}`).join(' · ')}</small>{activePresetId === preset.id && <b className="selected-indicator">ACTIVE</b>}</button>
               <div className="preset-actions">
                 <button onClick={() => onCustomPresetsChange(customPresets.map((item) => item.id === preset.id ? { ...item, favorite: !item.favorite } : item))} aria-label="お気に入り">{preset.favorite ? '★' : '☆'}</button>
                 <button onClick={() => setEditing(preset)}>編集</button>
@@ -101,11 +102,11 @@ export function PresetsPage({ customPresets, onCustomPresetsChange, onSelect }: 
         )}
       </section>
       {groups.map((group) => (
-        <section key={group.instrument}>
+        <section key={group.instrument} data-collection="instrument" data-instrument={group.instrument}>
           <div className="section-heading"><h2>{group.instrument.toUpperCase()}</h2><span>{group.presets.length.toString().padStart(2, '0')} PRESETS</span></div>
           <div className="preset-grid builtins">{group.presets.map((preset) => (
-            <button className="preset-card" key={preset.id} onClick={() => onSelect(preset)}>
-              <span>{preset.instrument}</span><strong>{preset.name}</strong><small>{preset.strings.map((item) => `${item.note}${item.octave}`).join(' · ')}</small><i aria-hidden="true">→</i>
+            <button className={`preset-card${activePresetId === preset.id ? ' is-selected' : ''}`} key={preset.id} onClick={() => onSelect(preset)} aria-current={activePresetId === preset.id ? 'true' : undefined}>
+              <span>{preset.instrument}</span><strong>{preset.name}</strong><small>{preset.strings.map((item) => `${item.note}${item.octave}`).join(' · ')}</small>{activePresetId === preset.id && <b className="selected-indicator">ACTIVE</b>}<i aria-hidden="true">→</i>
             </button>
           ))}</div>
         </section>
