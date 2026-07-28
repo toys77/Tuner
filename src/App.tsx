@@ -4,7 +4,7 @@ import { MODE_DEFAULT_PRESET, DEFAULT_PRESETS } from './presets/defaultPresets'
 import { PresetsPage } from './pages/PresetsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { TunerPage } from './pages/TunerPage'
-import { loadCustomPresets, saveCustomPresets } from './stores/presetStore'
+import { loadCustomPresets, loadPresetSelection, saveCustomPresets, savePresetSelection } from './stores/presetStore'
 import { loadSettings, resetSettings, saveSettings } from './stores/settingsStore'
 import type { TuningPreset } from './types/preset'
 import type { TunerMode } from './types/tuner'
@@ -13,9 +13,10 @@ export default function App() {
   const [page, setPage] = useState<AppPage>('tuner')
   const [settings, setSettings] = useState(loadSettings)
   const [customPresets, setCustomPresets] = useState(loadCustomPresets)
-  const [mode, setMode] = useState<TunerMode>('chromatic')
-  const [activePresetId, setActivePresetId] = useState<string | null>(null)
-  const [selectedStringId, setSelectedStringId] = useState<string | null>(null)
+  const [initialSelection] = useState(loadPresetSelection)
+  const [mode, setMode] = useState<TunerMode>(initialSelection.mode)
+  const [activePresetId, setActivePresetId] = useState<string | null>(initialSelection.activePresetId)
+  const [selectedStringId, setSelectedStringId] = useState<string | null>(initialSelection.selectedStringId)
   const allPresets = useMemo(() => [...DEFAULT_PRESETS, ...customPresets], [customPresets])
   const activePreset = allPresets.find((item) => item.id === activePresetId) ?? null
 
@@ -26,6 +27,23 @@ export default function App() {
   }, [settings])
 
   useEffect(() => { saveCustomPresets(customPresets) }, [customPresets])
+
+  useEffect(() => {
+    if (!activePresetId) return
+    const restoredPreset = allPresets.find((item) => item.id === activePresetId)
+    if (!restoredPreset) {
+      setMode('chromatic')
+      setActivePresetId(null)
+      setSelectedStringId(null)
+      return
+    }
+    if (mode !== restoredPreset.mode) setMode(restoredPreset.mode)
+    if (!restoredPreset.strings.some((string) => string.id === selectedStringId)) setSelectedStringId(restoredPreset.strings[0]?.id ?? null)
+  }, [activePresetId, allPresets, mode, selectedStringId])
+
+  useEffect(() => {
+    savePresetSelection({ mode, activePresetId, selectedStringId })
+  }, [activePresetId, mode, selectedStringId])
 
   const selectPreset = (preset: TuningPreset) => {
     setActivePresetId(preset.id)
@@ -50,7 +68,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <div className="background-grid" aria-hidden="true" />
-      {page === 'tuner' && <TunerPage settings={settings} mode={mode} preset={activePreset} selectedStringId={selectedStringId} onModeChange={changeMode} onStringChange={(id) => { setSelectedStringId(id); if (settings.autoString) setSettings({ ...settings, autoString: false }) }} onOpenSettings={() => setPage('settings')} />}
+      {page === 'tuner' && <TunerPage settings={settings} mode={mode} preset={activePreset} availablePresets={allPresets} selectedStringId={selectedStringId} onModeChange={changeMode} onPresetSelect={selectPreset} onViewAllPresets={() => setPage('presets')} onStringChange={(id) => { setSelectedStringId(id); if (settings.autoString) setSettings({ ...settings, autoString: false }) }} onOpenSettings={() => setPage('settings')} />}
       {page === 'presets' && <PresetsPage customPresets={customPresets} activePresetId={activePresetId} onCustomPresetsChange={setCustomPresets} onSelect={selectPreset} />}
       {page === 'settings' && <SettingsPage settings={settings} onChange={setSettings} onReset={() => setSettings(resetSettings())} />}
       <BottomNavigation page={page} onChange={setPage} />

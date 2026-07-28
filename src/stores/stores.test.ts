@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { TuningPreset } from '../types/preset'
 import type { StorageAdapter } from './storage'
 import { localStorageAdapter } from './storage'
-import { loadCustomPresets, saveCustomPresets } from './presetStore'
+import { loadCustomPresets, loadPresetSelection, saveCustomPresets, savePresetSelection } from './presetStore'
 import { DEFAULT_SETTINGS, loadSettings, saveSettings } from './settingsStore'
 
 function memoryStorage(): StorageAdapter {
@@ -27,6 +27,13 @@ describe('persistent stores', () => {
     const preset: TuningPreset = { id: 'browser', name: 'Browser Setup', instrument: 'Guitar', mode: 'custom', strings: [{ id: 'one', note: 'E', octave: 2, midi: 40 }] }
     saveCustomPresets([preset], localStorageAdapter)
     expect(loadCustomPresets(localStorageAdapter)).toEqual([preset])
+  })
+
+  it('saves and restores the active preset and target string', () => {
+    const storage = memoryStorage()
+    const selection = { mode: 'bass5' as const, activePresetId: 'bass5-half-down', selectedStringId: 'string-3' }
+    savePresetSelection(selection, storage)
+    expect(loadPresetSelection(storage)).toEqual(selection)
   })
 
   it('saves and restores settings', () => {

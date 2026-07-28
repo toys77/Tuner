@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { TuningPreset } from '../types/preset'
 import { DEFAULT_PRESETS, MODE_LABELS } from './defaultPresets'
-import { getPresetDisplayName, getPresetInstrumentDisplayName } from './presetLabels'
+import { getPresetDisplayName, getPresetInstrumentDisplayName, isPresetCompatibleWithMode } from './presetLabels'
 
 const EXPECTED_MIDIS: Record<string, number[]> = {
   'guitar-standard': [40, 45, 50, 55, 59, 64],
@@ -79,5 +79,18 @@ describe('built-in preset display labels', () => {
     }
     expect(getPresetInstrumentDisplayName(legacy)).toBe('カスタム楽器')
     expect(legacy.id).toBe('saved-custom')
+  })
+
+  it('offers compatible custom presets with the matching instrument mode', () => {
+    const custom: TuningPreset = {
+      id: 'custom-five-bass',
+      name: 'Low Custom',
+      instrument: '5弦ベース',
+      mode: 'custom',
+      strings: [{ id: 'one', note: 'B', octave: 0, midi: 23 }],
+    }
+    expect(isPresetCompatibleWithMode(custom, 'bass5')).toBe(true)
+    expect(isPresetCompatibleWithMode(custom, 'guitar')).toBe(false)
+    expect(isPresetCompatibleWithMode(custom, 'custom')).toBe(true)
   })
 })

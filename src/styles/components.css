@@ -74,13 +74,90 @@
 .permission-steps li { margin-bottom: 5px; }
 
 .tuner-console { flex: 1; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto auto; gap: clamp(5px, 1vh, 10px); padding-top: 7px; }
-.preset-row { min-height: 38px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.preset-row > span { overflow: hidden; font: 0.68rem var(--mono); white-space: nowrap; text-overflow: ellipsis; }
-.preset-row > span small { margin-right: 7px; color: var(--muted); letter-spacing: 0.1em; }
+.preset-row { min-height: 38px; display: flex; align-items: stretch; justify-content: space-between; gap: 8px; }
+.preset-selector {
+  position: relative;
+  flex: 1 1 260px;
+  min-width: 0;
+  min-height: 62px;
+  padding: 7px 38px 7px 10px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
+  align-content: center;
+  border: 1px solid var(--line-soft);
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
+  text-align: left;
+}
+.preset-selector-label { color: var(--faint); font: 700 0.5rem/1.15 var(--font-label); letter-spacing: 0.1em; }
+.preset-instrument { margin-top: 2px; color: var(--muted); font: 600 0.64rem/1.25 var(--font-ui); overflow-wrap: anywhere; }
+.preset-selector .preset-name {
+  margin-top: 1px;
+  color: var(--ink-strong);
+  font: 750 0.92rem/1.25 var(--font-display);
+  overflow: visible;
+  white-space: normal;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+.preset-chevron { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font: 800 1rem var(--font-numeric); }
+.preset-selector[aria-expanded='true'] { border-color: var(--ink-strong); background: var(--surface); }
 .string-selector { display: flex; gap: 4px; }
 .string-selector button { min-width: 38px; height: 38px; padding: 0 5px; border: 1px solid var(--line-soft); background: var(--surface); font: 750 0.73rem var(--mono); }
 .string-selector button sup { font-size: 0.52rem; }
 .string-selector button.active { border-color: var(--ink-strong); background: var(--ink); color: var(--surface-raised); }
+
+.preset-sheet-backdrop {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  padding: 12px 12px max(12px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: color-mix(in srgb, var(--ink-strong) 34%, transparent);
+  animation: preset-backdrop-in 180ms ease-out;
+}
+.preset-sheet {
+  width: min(100%, 560px);
+  max-height: min(78svh, 720px);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-raised);
+  border: 1px solid var(--ink-strong);
+  box-shadow: 0 -12px 32px var(--shadow);
+  animation: preset-sheet-in 180ms ease-out;
+}
+.preset-sheet-header { min-height: 58px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); }
+.preset-sheet-header > div { min-width: 0; }
+.preset-sheet-header h2 { margin: 3px 0 0; color: var(--ink-strong); font-size: 1.25rem; line-height: 1.2; }
+.preset-sheet-instrument { padding: 11px 2px 8px; color: var(--muted); font: 700 0.72rem/1.2 var(--font-ui); }
+.preset-sheet-list { min-height: 0; overflow-y: auto; border-block: 1px solid var(--line-soft); }
+.preset-sheet-list button {
+  width: 100%;
+  min-height: 50px;
+  padding: 8px 12px;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-bottom: 1px solid var(--line-soft);
+  border-left: 4px solid transparent;
+  background: transparent;
+  text-align: left;
+}
+.preset-sheet-list button:last-child { border-bottom: 0; }
+.preset-sheet-list button > span { color: var(--faint); font: 700 0.75rem var(--font-numeric); }
+.preset-sheet-list button > strong { min-width: 0; color: var(--ink-strong); font: 700 0.9rem/1.3 var(--font-display); white-space: normal; overflow-wrap: anywhere; }
+.preset-sheet-list button.is-selected { border-left-color: var(--tune); background: color-mix(in srgb, var(--tune-soft) 72%, transparent); }
+.preset-sheet-list button.is-selected > span,
+.preset-sheet-list button.is-selected > strong { color: var(--tune); }
+.preset-sheet-actions { padding-top: 12px; display: grid; grid-template-columns: minmax(100px, 0.65fr) minmax(0, 1.35fr); gap: 8px; }
+.preset-sheet-actions button { width: 100%; min-width: 0; white-space: normal; line-height: 1.25; }
+@keyframes preset-backdrop-in { from { opacity: 0; } }
+@keyframes preset-sheet-in { from { opacity: 0; transform: translateY(20px); } }
 
 .pitch-panel {
   min-height: 0;
@@ -596,7 +673,7 @@
 }
 
 .preset-summary { display: flex; align-items: baseline; max-width: 100%; }
-.preset-name { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.preset-name { overflow: visible; white-space: normal; text-overflow: clip; overflow-wrap: anywhere; }
 .preset-card > strong,
 .preset-main > strong,
 .preset-card > small,
@@ -636,6 +713,7 @@
     gap: 5px;
   }
   .preset-row > .preset-summary { width: 100%; max-width: 100%; }
+  .preset-selector { width: 100%; min-height: 70px; }
   .string-selector {
     width: 100%;
     display: flex;
@@ -644,9 +722,10 @@
     overflow: visible;
   }
   .string-selector button {
-    flex: 0 0 44px;
-    width: 44px;
+    flex: 1 1 44px;
+    width: auto;
     min-width: 44px;
+    max-width: none;
     height: 44px;
     padding-inline: 4px;
   }
@@ -833,6 +912,15 @@
   .string-row input,
   .string-row select { padding-inline: 7px; }
   .remove-button { min-width: 44px; width: 44px; }
+  .preset-sheet-backdrop { padding: 0; }
+  .preset-sheet {
+    width: 100%;
+    max-height: min(82svh, 720px);
+    padding: 12px 12px max(12px, env(safe-area-inset-bottom));
+    border-inline: 0;
+    border-bottom: 0;
+  }
+  .preset-sheet-actions { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 359px) {

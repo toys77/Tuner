@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { InputLevel } from '../components/InputLevel'
 import { NoteDisplay } from '../components/NoteDisplay'
+import { PresetSelector } from '../components/PresetSelector'
 import { StatusLabel } from '../components/StatusLabel'
 import { TuningMeter } from '../components/TuningMeter'
 import { useMicrophone, type MicrophoneStatus } from '../hooks/useMicrophone'
@@ -8,7 +9,7 @@ import { usePitchDetection } from '../hooks/usePitchDetection'
 import { useReferenceTone } from '../hooks/useReferenceTone'
 import { useWakeLock } from '../hooks/useWakeLock'
 import { MODE_LABELS } from '../presets/defaultPresets'
-import { getPresetDisplayName, getPresetInstrumentDisplayName } from '../presets/presetLabels'
+import { isPresetCompatibleWithMode } from '../presets/presetLabels'
 import type { TuningPreset } from '../types/preset'
 import type { AppSettings, PitchStatus, TunerMode } from '../types/tuner'
 import { classifyCents } from '../utils/cents'
@@ -20,8 +21,11 @@ interface TunerPageProps {
   settings: AppSettings
   mode: TunerMode
   preset: TuningPreset | null
+  availablePresets: TuningPreset[]
   selectedStringId: string | null
   onModeChange: (mode: TunerMode) => void
+  onPresetSelect: (preset: TuningPreset) => void
+  onViewAllPresets: () => void
   onStringChange: (id: string) => void
   onOpenSettings: () => void
 }
@@ -58,7 +62,7 @@ export function MicrophonePrompt({ status, error, onStart }: { status: Microphon
   )
 }
 
-export function TunerPage({ settings, mode, preset, selectedStringId, onModeChange, onStringChange, onOpenSettings }: TunerPageProps) {
+export function TunerPage({ settings, mode, preset, availablePresets, selectedStringId, onModeChange, onPresetSelect, onViewAllPresets, onStringChange, onOpenSettings }: TunerPageProps) {
   const microphone = useMicrophone()
   const detection = usePitchDetection(microphone.session, settings)
   const tone = useReferenceTone()
@@ -90,8 +94,7 @@ export function TunerPage({ settings, mode, preset, selectedStringId, onModeChan
   const isInTune = status === 'in-tune'
   const selectedToneFrequency = midiToFrequency(toneMidi, settings.referencePitch)
   const toneNote = midiToNoteParts(toneMidi, settings.accidental, settings.noteLanguage, settings.germanB)
-  const presetDisplayName = preset ? getPresetDisplayName(preset) : ''
-  const presetInstrumentDisplayName = preset ? getPresetInstrumentDisplayName(preset) : ''
+  const compatiblePresets = useMemo(() => availablePresets.filter((item) => isPresetCompatibleWithMode(item, mode)), [availablePresets, mode])
 
   return (
     <main className={`tuner-page state-${status}`}>
@@ -118,7 +121,7 @@ export function TunerPage({ settings, mode, preset, selectedStringId, onModeChan
         <div className="tuner-console">
           {preset && (
             <div className="preset-row">
-              <span className="preset-summary" title={`${presetInstrumentDisplayName} / ${presetDisplayName}`}><small>PRESET</small><span className="preset-name">{presetInstrumentDisplayName} / <strong>{presetDisplayName}</strong></span></span>
+              <PresetSelector preset={preset} options={compatiblePresets} onSelect={onPresetSelect} onViewAll={onViewAllPresets} />
               <div className="string-selector" aria-label="対象弦">
                 {preset.strings.map((string, index) => {
                   const note = midiToNoteParts(string.midi, settings.accidental, settings.noteLanguage, settings.germanB)
