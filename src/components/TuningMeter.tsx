@@ -14,8 +14,8 @@ export function TuningMeter({ cents, range, reverse = false, inTune = false }: T
     <figure className={`tuning-meter${inTune ? ' is-in-tune' : ''}`} aria-label={`チューニングメーター: ${valueText}`}>
       <div className="meter-scale" aria-hidden="true">
         <div className="tune-zone" />
-        {ticks.map((tick) => (
-          <span key={tick} className={`meter-tick${tick === 0 ? ' center' : ''}`} style={{ left: `${50 + (tick / range) * 50}%` }}>
+        {ticks.map((tick, index) => (
+          <span key={tick} className={`meter-tick${tick === 0 ? ' center' : ''}${index % 2 === 1 && tick !== 0 ? ' minor' : ''}`} style={{ left: `${50 + (tick / range) * 50}%` }}>
             <i />
             <small>{tick === 0 ? '0' : Math.round(tick)}</small>
           </span>

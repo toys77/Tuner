@@ -115,7 +115,7 @@ export function TunerPage({ settings, mode, preset, selectedStringId, onModeChan
         <div className="tuner-console">
           {preset && (
             <div className="preset-row">
-              <span><small>PRESET</small>{preset.instrument} / <strong>{preset.name}</strong></span>
+              <span className="preset-summary" title={`${preset.instrument} / ${preset.name}`}><small>PRESET</small><span className="preset-name">{preset.instrument} / <strong>{preset.name}</strong></span></span>
               <div className="string-selector" aria-label="対象弦">
                 {preset.strings.map((string, index) => {
                   const note = midiToNoteParts(string.midi, settings.accidental, settings.noteLanguage, settings.germanB)

@@ -90,7 +90,7 @@ export function PresetsPage({ customPresets, activePresetId, onCustomPresetsChan
         {customPresets.length === 0 ? <div className="empty-state"><strong>カスタム設定はありません</strong><p>楽器や弦数、各弦の音程を自由に登録できます。</p></div> : (
           <div className="preset-grid">{[...customPresets].sort((a, b) => Number(Boolean(b.favorite)) - Number(Boolean(a.favorite))).map((preset) => (
             <article className={`preset-card custom${activePresetId === preset.id ? ' is-selected' : ''}`} key={preset.id} data-favorite={preset.favorite ? 'true' : 'false'}>
-              <button className="preset-main" onClick={() => onSelect(preset)} aria-current={activePresetId === preset.id ? 'true' : undefined}><span>{preset.instrument}</span><strong>{preset.name}</strong><small>{preset.strings.map((item) => `${item.note}${item.octave}`).join(' · ')}</small>{activePresetId === preset.id && <b className="selected-indicator">ACTIVE</b>}</button>
+              <button className="preset-main" onClick={() => onSelect(preset)} aria-current={activePresetId === preset.id ? 'true' : undefined}><span>{preset.instrument}</span><strong title={preset.name}>{preset.name}</strong><small>{preset.strings.map((item) => `${item.note}${item.octave}`).join(' · ')}</small>{activePresetId === preset.id && <b className="selected-indicator">ACTIVE</b>}</button>
               <div className="preset-actions">
                 <button onClick={() => onCustomPresetsChange(customPresets.map((item) => item.id === preset.id ? { ...item, favorite: !item.favorite } : item))} aria-label="お気に入り">{preset.favorite ? '★' : '☆'}</button>
                 <button onClick={() => setEditing(preset)}>編集</button>
@@ -106,7 +106,7 @@ export function PresetsPage({ customPresets, activePresetId, onCustomPresetsChan
           <div className="section-heading"><h2>{group.instrument.toUpperCase()}</h2><span>{group.presets.length.toString().padStart(2, '0')} PRESETS</span></div>
           <div className="preset-grid builtins">{group.presets.map((preset) => (
             <button className={`preset-card${activePresetId === preset.id ? ' is-selected' : ''}`} key={preset.id} onClick={() => onSelect(preset)} aria-current={activePresetId === preset.id ? 'true' : undefined}>
-              <span>{preset.instrument}</span><strong>{preset.name}</strong><small>{preset.strings.map((item) => `${item.note}${item.octave}`).join(' · ')}</small>{activePresetId === preset.id && <b className="selected-indicator">ACTIVE</b>}<i aria-hidden="true">→</i>
+              <span>{preset.instrument}</span><strong title={preset.name}>{preset.name}</strong><small>{preset.strings.map((item) => `${item.note}${item.octave}`).join(' · ')}</small>{activePresetId === preset.id && <b className="selected-indicator">ACTIVE</b>}<i aria-hidden="true">→</i>
             </button>
           ))}</div>
         </section>
