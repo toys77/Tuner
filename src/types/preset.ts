@@ -10,7 +10,9 @@ export interface TuningString {
 export interface TuningPreset {
   id: string
   name: string
+  displayName?: string
   instrument: string
+  instrumentDisplayName?: string
   mode: TunerMode
   strings: TuningString[]
   builtin?: boolean

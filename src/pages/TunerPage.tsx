@@ -8,6 +8,7 @@ import { usePitchDetection } from '../hooks/usePitchDetection'
 import { useReferenceTone } from '../hooks/useReferenceTone'
 import { useWakeLock } from '../hooks/useWakeLock'
 import { MODE_LABELS } from '../presets/defaultPresets'
+import { getPresetDisplayName, getPresetInstrumentDisplayName } from '../presets/presetLabels'
 import type { TuningPreset } from '../types/preset'
 import type { AppSettings, PitchStatus, TunerMode } from '../types/tuner'
 import { classifyCents } from '../utils/cents'
@@ -89,6 +90,8 @@ export function TunerPage({ settings, mode, preset, selectedStringId, onModeChan
   const isInTune = status === 'in-tune'
   const selectedToneFrequency = midiToFrequency(toneMidi, settings.referencePitch)
   const toneNote = midiToNoteParts(toneMidi, settings.accidental, settings.noteLanguage, settings.germanB)
+  const presetDisplayName = preset ? getPresetDisplayName(preset) : ''
+  const presetInstrumentDisplayName = preset ? getPresetInstrumentDisplayName(preset) : ''
 
   return (
     <main className={`tuner-page state-${status}`}>
@@ -102,7 +105,7 @@ export function TunerPage({ settings, mode, preset, selectedStringId, onModeChan
           <span>MODE</span>
           <select value={mode} onChange={(event) => onModeChange(event.target.value as TunerMode)}>
             {Object.entries(MODE_LABELS).filter(([key]) => key !== 'custom').map(([key, label]) => <option key={key} value={key}>{label}</option>)}
-            {mode === 'custom' && <option value="custom">CUSTOM</option>}
+            {mode === 'custom' && <option value="custom">{MODE_LABELS.custom}</option>}
           </select>
         </label>
         <div><span>REFERENCE</span><strong>A4 = {settings.referencePitch} Hz</strong></div>
@@ -115,7 +118,7 @@ export function TunerPage({ settings, mode, preset, selectedStringId, onModeChan
         <div className="tuner-console">
           {preset && (
             <div className="preset-row">
-              <span className="preset-summary" title={`${preset.instrument} / ${preset.name}`}><small>PRESET</small><span className="preset-name">{preset.instrument} / <strong>{preset.name}</strong></span></span>
+              <span className="preset-summary" title={`${presetInstrumentDisplayName} / ${presetDisplayName}`}><small>PRESET</small><span className="preset-name">{presetInstrumentDisplayName} / <strong>{presetDisplayName}</strong></span></span>
               <div className="string-selector" aria-label="対象弦">
                 {preset.strings.map((string, index) => {
                   const note = midiToNoteParts(string.midi, settings.accidental, settings.noteLanguage, settings.germanB)
