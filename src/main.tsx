@@ -8,5 +8,21 @@ import './styles/components.css'
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>)
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => undefined))
+  const hadController = Boolean(navigator.serviceWorker.controller)
+  let refreshing = false
+
+  if (hadController) {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return
+      refreshing = true
+      window.location.reload()
+    })
+  }
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register(`${import.meta.env.BASE_URL}sw.js`, { updateViaCache: 'none' })
+      .then((registration) => registration.update())
+      .catch(() => undefined)
+  })
 }
