@@ -1,12 +1,13 @@
-import type { PitchStatus } from '../types/tuner'
-import { pitchStatusLabel } from '../utils/cents'
+import type { TunerFeedback } from '../utils/tunerFeedback'
 
-export function StatusLabel({ status, cents }: { status: PitchStatus; cents: number }) {
+export function StatusLabel({ feedback }: { feedback: TunerFeedback }) {
   return (
-    <div className={`pitch-status pitch-status-${status}`} role="status">
-      <span className="status-symbol" aria-hidden="true">{status === 'in-tune' ? '◆' : cents < 0 ? '◀' : cents > 0 ? '▶' : '◇'}</span>
-      <strong>{pitchStatusLabel(status, cents)}</strong>
-      <small>{pitchStatusLabel(status, cents, false)}</small>
+    <div className={`pitch-status pitch-status-${feedback.key}`} role="status" aria-live="polite" aria-atomic="true">
+      <div className="pitch-status__main">
+        <span className="status-symbol" aria-hidden="true">{feedback.symbol}</span>
+        <strong>{feedback.label}</strong>
+      </div>
+      <small className="pitch-status__english" aria-hidden="true">{feedback.english}</small>
     </div>
   )
 }

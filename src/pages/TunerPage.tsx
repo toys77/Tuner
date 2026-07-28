@@ -16,6 +16,7 @@ import { classifyCents } from '../utils/cents'
 import { midiToFrequency } from '../utils/frequency'
 import { midiToNoteParts } from '../utils/notes'
 import { createPitchReading } from '../utils/pitchReading'
+import { getTunerFeedback } from '../utils/tunerFeedback'
 
 interface TunerPageProps {
   settings: AppSettings
@@ -67,10 +68,12 @@ export function TunerPage({ settings, mode, preset, availablePresets, selectedSt
   const detection = usePitchDetection(microphone.session, settings)
   const tone = useReferenceTone()
   const wakeLock = useWakeLock(settings.wakeLock && microphone.status === 'listening')
-  const reading = useMemo(
+  const detectedReading = useMemo(
     () => detection.result ? createPitchReading(detection.result, settings, preset, selectedStringId) : null,
     [detection.result, preset, selectedStringId, settings],
   )
+  const microphoneActive = microphone.status === 'listening'
+  const reading = microphoneActive ? detectedReading : null
   const status: PitchStatus = microphone.status !== 'listening'
     ? 'idle'
     : reading
@@ -78,6 +81,11 @@ export function TunerPage({ settings, mode, preset, availablePresets, selectedSt
       : detection.inputStatus === 'no-input' ? 'no-input' : 'listening'
   const previousStatus = useRef<PitchStatus>('idle')
   const [toneMidi, setToneMidi] = useState(69)
+  const [hasEnteredConsole, setHasEnteredConsole] = useState(false)
+
+  useEffect(() => {
+    if (microphoneActive) setHasEnteredConsole(true)
+  }, [microphoneActive])
 
   useEffect(() => {
     if (status === 'in-tune' && previousStatus.current !== 'in-tune' && settings.vibration && navigator.vibrate) navigator.vibrate(35)
@@ -95,6 +103,14 @@ export function TunerPage({ settings, mode, preset, availablePresets, selectedSt
   const selectedToneFrequency = midiToFrequency(toneMidi, settings.referencePitch)
   const toneNote = midiToNoteParts(toneMidi, settings.accidental, settings.noteLanguage, settings.germanB)
   const compatiblePresets = useMemo(() => availablePresets.filter((item) => isPresetCompatibleWithMode(item, mode)), [availablePresets, mode])
+  const feedback = useMemo(() => getTunerFeedback({
+    microphoneActive,
+    inputStatus: detection.inputStatus,
+    pitchStatus: status,
+    cents,
+    hasReading: Boolean(reading),
+  }), [cents, detection.inputStatus, microphoneActive, reading, status])
+  const showConsole = microphoneActive || hasEnteredConsole
 
   return (
     <main className={`tuner-page state-${status}`}>
@@ -115,7 +131,7 @@ export function TunerPage({ settings, mode, preset, availablePresets, selectedSt
         <div className={`system-dot ${microphone.status}`}><i />{microphone.status === 'listening' ? 'MIC ON' : 'MIC OFF'}</div>
       </section>
 
-      {microphone.status !== 'listening' ? (
+      {!showConsole ? (
         <MicrophonePrompt status={microphone.status} error={microphone.error} onStart={() => void microphone.start()} />
       ) : (
         <div className="tuner-console">
@@ -139,7 +155,7 @@ export function TunerPage({ settings, mode, preset, availablePresets, selectedSt
               {settings.showCents
                 ? <strong>{reading ? `${reading.cents >= 0 ? '+' : '−'}${Math.abs(reading.cents).toFixed(1)}` : '—.—'}<small> cents</small></strong>
                 : <strong className="value-hidden">—</strong>}
-              <StatusLabel status={status} cents={cents} />
+              <StatusLabel feedback={feedback} />
             </div>
             <div className="auxiliary-readout">
               {settings.showFrequency && <div><span>FREQUENCY</span><strong>{reading ? reading.frequency.toFixed(2) : '—.—'}<small> Hz</small></strong></div>}
@@ -148,10 +164,12 @@ export function TunerPage({ settings, mode, preset, availablePresets, selectedSt
           </section>
 
           <TuningMeter cents={reading?.cents ?? null} range={settings.meterRange} reverse={settings.reverseMeter} inTune={isInTune} />
-          <InputLevel rms={detection.rms} status={detection.inputStatus} />
+          <InputLevel rms={detection.rms} status={detection.inputStatus} active={microphoneActive} message={feedback.message} />
 
           <div className="console-actions">
-            <button className="secondary-button mic-stop" type="button" onClick={() => void microphone.stop()}><span aria-hidden="true">■</span> マイク停止</button>
+            <button className="secondary-button mic-stop" type="button" disabled={microphone.status === 'requesting'} onClick={() => microphoneActive ? void microphone.stop() : void microphone.start()}>
+              <span aria-hidden="true">{microphoneActive ? '■' : '▶'}</span> {microphoneActive ? 'マイク停止' : 'マイク開始'}
+            </button>
             <details className="tone-panel">
               <summary>基準音を再生</summary>
               <div className="tone-controls">

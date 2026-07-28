@@ -949,3 +949,177 @@
   .string-row { grid-template-columns: 22px minmax(0, 1fr) 58px 44px; }
   .string-row .reorder-buttons { display: none; }
 }
+
+/* Fixed live-feedback geometry: state changes must never move adjacent controls. */
+.deviation-readout .pitch-status {
+  box-sizing: border-box;
+  width: 100%;
+  height: 50px;
+  min-height: 50px;
+  max-height: 50px;
+  padding: 0 4px;
+  display: grid;
+  grid-template-rows: 32px 18px;
+  align-content: center;
+  gap: 0;
+  overflow: hidden;
+  border: 0;
+  border-top: 1px solid var(--line-soft);
+  text-align: center;
+  transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease, opacity 160ms ease;
+}
+.pitch-status__main {
+  min-width: 0;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.deviation-readout .pitch-status .status-symbol {
+  flex: 0 0 auto;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1;
+}
+.deviation-readout .pitch-status strong {
+  min-width: 0;
+  color: var(--ink-strong);
+  font-size: clamp(0.78rem, 2.2vw, 0.96rem);
+  line-height: 1;
+  white-space: nowrap;
+}
+.deviation-readout .pitch-status .pitch-status__english {
+  height: 18px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--muted);
+  font: 650 0.46rem/1 var(--font-label);
+  letter-spacing: 0.075em;
+  white-space: nowrap;
+}
+.pitch-status-in-tune .status-symbol,
+.pitch-status-in-tune strong { color: var(--tune) !important; }
+.pitch-status-low .status-symbol,
+.pitch-status-low strong,
+.pitch-status-input-low .status-symbol { color: var(--flat) !important; }
+.pitch-status-high .status-symbol,
+.pitch-status-high strong,
+.pitch-status-input-high .status-symbol,
+.pitch-status-clipping .status-symbol { color: var(--sharp) !important; }
+
+.input-level.microphone-feedback {
+  box-sizing: border-box;
+  width: 100%;
+  height: 68px;
+  min-height: 68px;
+  max-height: 68px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 20px 8px 40px;
+  align-items: center;
+  gap: 0;
+  overflow: hidden;
+  opacity: 0.86;
+}
+.microphone-feedback__header {
+  min-width: 0;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font: 650 0.52rem/1 var(--font-label);
+  letter-spacing: 0.075em;
+}
+.microphone-feedback__header span { color: var(--muted); }
+.microphone-feedback__header strong { flex: 0 0 auto; white-space: nowrap; }
+.input-level.microphone-feedback .level-track {
+  width: 100%;
+  height: 6px;
+  align-self: center;
+}
+.input-level .microphone-feedback__message {
+  box-sizing: border-box;
+  grid-column: 1;
+  width: 100%;
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+  margin: 0;
+  padding: 2px 4px 2px 7px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border-left: 2px solid var(--line);
+  color: var(--muted);
+  font-size: clamp(0.72rem, 2.8vw, 0.82rem);
+  line-height: 18px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  transition: color 160ms ease, border-color 160ms ease, opacity 160ms ease;
+}
+.input-level.status-low .microphone-feedback__message { border-left-color: var(--flat); }
+.input-level.status-high .microphone-feedback__message,
+.input-level.status-clipping .microphone-feedback__message { border-left-color: var(--sharp); color: var(--ink); }
+.input-level.status-ok .microphone-feedback__message { border-left-color: var(--tune); }
+
+.console-actions {
+  position: static;
+  box-sizing: border-box;
+  width: 100%;
+  height: 54px;
+  min-height: 54px;
+  max-height: 54px;
+  margin-top: 1px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 8px;
+}
+.console-actions > .mic-stop,
+.console-actions > .tone-panel {
+  width: 100%;
+  height: 54px;
+  min-width: 0;
+  min-height: 54px;
+  max-height: 54px;
+  margin: 0;
+}
+.console-actions > .mic-stop,
+.console-actions > .tone-panel > summary {
+  width: 100%;
+  height: 54px;
+  min-height: 54px;
+  max-height: 54px;
+  padding: 8px;
+  white-space: nowrap;
+  line-height: 1;
+}
+.tone-panel[open] .tone-controls { bottom: 54px; }
+
+@media (max-width: 429px) {
+  .deviation-readout .pitch-status {
+    padding: 0 0 0 6px;
+    border-top: 0;
+    border-left: 1px solid var(--line-soft);
+  }
+  .pitch-status__main { gap: 4px; }
+  .deviation-readout .pitch-status .status-symbol { display: block; font-size: 0.68rem; }
+  .deviation-readout .pitch-status strong { font-size: 0.73rem; }
+  .deviation-readout .pitch-status .pitch-status__english {
+    display: flex;
+    font-size: 0.4rem;
+    letter-spacing: 0.035em;
+  }
+  .input-level .microphone-feedback__message { font-size: clamp(0.72rem, 3.15vw, 0.78rem); }
+  .console-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .console-actions > .mic-stop,
+  .console-actions > .tone-panel { width: 100%; height: 54px; min-height: 54px; max-height: 54px; }
+}

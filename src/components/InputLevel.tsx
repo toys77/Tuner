@@ -8,20 +8,22 @@ const LABELS: Record<InputStatus, string> = {
   clipping: 'CLIPPING',
 }
 
-export function InputLevel({ rms, status }: { rms: number; status: InputStatus }) {
-  const level = Math.min(100, Math.max(0, Math.sqrt(Math.min(rms, 1)) * 100))
-  const advice = status === 'low'
-    ? 'もう少し強く1本の弦を鳴らすか、端末を楽器へ近づけてください。'
-    : status === 'high' || status === 'clipping'
-      ? '端末を少し離すか、入力音量を下げてください。'
-      : ''
+interface InputLevelProps {
+  rms: number
+  status: InputStatus
+  active: boolean
+  message: string
+}
+
+export function InputLevel({ rms, status, active, message }: InputLevelProps) {
+  const level = active ? Math.min(100, Math.max(0, Math.sqrt(Math.min(rms, 1)) * 100)) : 0
   return (
-    <div className={`input-level status-${status}`}>
-      <div className="input-heading"><span>MICROPHONE LEVEL</span><strong>{LABELS[status]}</strong></div>
+    <section className={`input-level microphone-feedback status-${active ? status : 'inactive'}`} aria-label="マイク入力状態">
+      <div className="input-heading microphone-feedback__header"><span>MICROPHONE LEVEL</span><strong>{active ? LABELS[status] : 'MIC OFF'}</strong></div>
       <div className="level-track" role="meter" aria-label="マイク入力レベル" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(level)}>
         <span style={{ width: `${level}%` }} />
       </div>
-      {advice && <p>{advice}</p>}
-    </div>
+      <p className="microphone-feedback__message" aria-live="off">{message || '\u00a0'}</p>
+    </section>
   )
 }
