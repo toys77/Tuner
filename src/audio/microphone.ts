@@ -1,4 +1,4 @@
-export type MicrophoneErrorCode = 'unsupported' | 'denied' | 'unavailable' | 'unknown'
+export type MicrophoneErrorCode = 'unsupported' | 'denied' | 'unavailable' | 'activation' | 'unknown'
 
 export class MicrophoneError extends Error {
   constructor(public readonly code: MicrophoneErrorCode, message: string) {
@@ -11,16 +11,42 @@ export interface MicrophoneSession {
   stream: MediaStream
   context: AudioContext
   analyser: AnalyserNode
+  closeAudio(): Promise<void>
   close(): Promise<void>
 }
 
-export async function openMicrophone(): Promise<MicrophoneSession> {
+const AUDIO_CONTEXT_START_TIMEOUT = 2_000
+
+function stopStream(stream: MediaStream) {
+  stream.getTracks().forEach((track) => track.stop())
+}
+
+async function resumeAudioContext(context: AudioContext) {
+  if (context.state === 'running') return
+
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    await Promise.race([
+      context.resume(),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error('AudioContext resume timed out')), AUDIO_CONTEXT_START_TIMEOUT)
+      }),
+    ])
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
+
+  const resumedState = context.state as AudioContextState
+  if (resumedState !== 'running') throw new Error(`AudioContext is ${resumedState}`)
+}
+
+export async function requestMicrophoneStream(): Promise<MediaStream> {
   if (!navigator.mediaDevices?.getUserMedia || !globalThis.AudioContext) {
     throw new MicrophoneError('unsupported', 'このブラウザはマイク入力に対応していません。')
   }
-  let stream: MediaStream
+
   try {
-    stream = await navigator.mediaDevices.getUserMedia({
+    return await navigator.mediaDevices.getUserMedia({
       audio: {
         echoCancellation: false,
         noiseSuppression: false,
@@ -39,9 +65,10 @@ export async function openMicrophone(): Promise<MicrophoneSession> {
     }
     throw new MicrophoneError('unknown', 'マイクを開始できませんでした。')
   }
+}
 
+export async function connectMicrophoneStream(stream: MediaStream): Promise<MicrophoneSession> {
   const context = new AudioContext({ latencyHint: 'interactive' })
-  await context.resume()
   const source = context.createMediaStreamSource(stream)
   const highPass = context.createBiquadFilter()
   highPass.type = 'highpass'
@@ -52,13 +79,42 @@ export async function openMicrophone(): Promise<MicrophoneSession> {
   analyser.smoothingTimeConstant = 0
   source.connect(highPass).connect(analyser)
 
+  try {
+    await resumeAudioContext(context)
+  } catch {
+    source.disconnect()
+    highPass.disconnect()
+    if (context.state !== 'closed') await context.close().catch(() => undefined)
+    throw new MicrophoneError('activation', '音声解析を開始できませんでした。もう一度タップしてください。')
+  }
+
+  let audioClosed = false
+  const closeAudio = async () => {
+    if (audioClosed) return
+    audioClosed = true
+    source.disconnect()
+    highPass.disconnect()
+    if (context.state !== 'closed') await context.close().catch(() => undefined)
+  }
+
   return {
     stream,
     context,
     analyser,
+    closeAudio,
     async close() {
-      stream.getTracks().forEach((track) => track.stop())
-      if (context.state !== 'closed') await context.close()
+      stopStream(stream)
+      await closeAudio()
     },
+  }
+}
+
+export async function openMicrophone(): Promise<MicrophoneSession> {
+  const stream = await requestMicrophoneStream()
+  try {
+    return await connectMicrophoneStream(stream)
+  } catch (error) {
+    stopStream(stream)
+    throw error
   }
 }

@@ -35,13 +35,16 @@ interface TunerPageProps {
 export function MicrophonePrompt({ status, error, onStart }: { status: MicrophoneStatus; error: string; onStart: () => void }) {
   const denied = status === 'denied'
   const unsupported = status === 'unsupported'
+  const needsActivation = status === 'needs-activation'
   return (
     <section className={`microphone-prompt${denied || unsupported || status === 'error' ? ' has-error' : ''}`} aria-labelledby="microphone-title">
       <div className="prompt-icon" aria-hidden="true">◉</div>
       <div className="prompt-copy">
         <span className="eyebrow">LOCAL AUDIO PROCESSING</span>
-        <h2 id="microphone-title">マイクを有効にする</h2>
-        <p className="prompt-description">楽器の音程を検出するためにマイクを使用します。音声は端末内だけで処理し、録音・保存・外部送信は行いません。</p>
+        <h2 id="microphone-title">{needsActivation ? '音声解析を開始する' : 'マイクを有効にする'}</h2>
+        <p className="prompt-description">{needsActivation
+          ? 'ホーム画面版では、音声解析を開始するため一度タップしてください。マイク権限を取り直す操作ではありません。'
+          : '楽器の音程を検出するためにマイクを使用します。音声は端末内だけで処理し、録音・保存・外部送信は行いません。'}</p>
         {error && <p className="error-message" role="alert">{error}</p>}
         {denied && (
           <ol className="permission-steps">
@@ -54,9 +57,9 @@ export function MicrophonePrompt({ status, error, onStart }: { status: Microphon
         {!denied && !unsupported && (
           <div className="prompt-action">
             <button className="primary-button mic-primary" type="button" onClick={onStart} disabled={status === 'requesting'}>
-              <span aria-hidden="true">◉</span>{status === 'requesting' ? '接続しています…' : 'マイクを使用する'}
+              <span aria-hidden="true">◉</span>{status === 'requesting' ? '接続しています…' : needsActivation ? '音声解析を開始' : 'マイクを使用する'}
             </button>
-            <small>タップするとブラウザの権限確認が表示されます</small>
+            <small>{needsActivation ? 'マイク権限はそのまま保持されます' : 'タップするとブラウザの権限確認が表示されます'}</small>
           </div>
         )}
       </div>
@@ -85,7 +88,8 @@ export function TunerPage({ microphone, settings, mode, preset, availablePresets
 
   useEffect(() => {
     if (microphoneActive) setHasEnteredConsole(true)
-  }, [microphoneActive])
+    if (microphone.status === 'needs-activation') setHasEnteredConsole(false)
+  }, [microphone.status, microphoneActive])
 
   useEffect(() => {
     if (status === 'in-tune' && previousStatus.current !== 'in-tune' && settings.vibration && navigator.vibrate) navigator.vibrate(35)

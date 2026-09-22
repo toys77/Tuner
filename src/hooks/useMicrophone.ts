@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { MicrophoneError, openMicrophone, type MicrophoneSession } from '../audio/microphone'
+import { connectMicrophoneStream, MicrophoneError, requestMicrophoneStream, type MicrophoneSession } from '../audio/microphone'
+import { isCurrentIosStandalone } from '../utils/platform'
 
-export type MicrophoneStatus = 'idle' | 'requesting' | 'listening' | 'denied' | 'unsupported' | 'error'
+export type MicrophoneStatus = 'idle' | 'requesting' | 'needs-activation' | 'listening' | 'denied' | 'unsupported' | 'error'
 
 export interface MicrophoneController {
   status: MicrophoneStatus
@@ -16,15 +17,39 @@ export function useMicrophone(): MicrophoneController {
   const [error, setError] = useState('')
   const [session, setSession] = useState<MicrophoneSession | null>(null)
   const sessionRef = useRef<MicrophoneSession | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
   const startingRef = useRef(false)
   const mountedRef = useRef(true)
+  const wasHiddenRef = useRef(false)
+
+  const showFailure = useCallback((caught: unknown) => {
+    if (!mountedRef.current) return
+    if (caught instanceof MicrophoneError) {
+      if (caught.code === 'activation') {
+        setStatus('needs-activation')
+      } else {
+        setStatus(caught.code === 'denied' ? 'denied' : caught.code === 'unsupported' ? 'unsupported' : 'error')
+      }
+      setError(caught.message)
+      return
+    }
+    setStatus('error')
+    setError('マイクを開始できませんでした。')
+  }, [])
 
   const stop = useCallback(async () => {
     const current = sessionRef.current
+    const pendingStream = streamRef.current
     sessionRef.current = null
+    streamRef.current = null
     setSession(null)
     setStatus('idle')
-    if (current) await current.close()
+    setError('')
+    if (current) {
+      await current.close()
+    } else {
+      pendingStream?.getTracks().forEach((track) => track.stop())
+    }
   }, [])
 
   const start = useCallback(async () => {
@@ -33,7 +58,20 @@ export function useMicrophone(): MicrophoneController {
     setStatus('requesting')
     setError('')
     try {
-      const next = await openMicrophone()
+      let stream = streamRef.current
+      if (!stream) {
+        stream = await requestMicrophoneStream()
+        streamRef.current = stream
+
+        // iOSのホーム画面版は、権限取得とは別にユーザー操作内でAudioContextを
+        // 作る必要がある。ストリームは保持し、次のタップでは権限を再要求しない。
+        if (isCurrentIosStandalone()) {
+          if (mountedRef.current) setStatus('needs-activation')
+          return
+        }
+      }
+
+      const next = await connectMicrophoneStream(stream)
       if (!mountedRef.current) {
         await next.close()
         return
@@ -42,16 +80,42 @@ export function useMicrophone(): MicrophoneController {
       setSession(next)
       setStatus('listening')
     } catch (caught) {
-      if (!mountedRef.current) return
-      if (caught instanceof MicrophoneError) {
-        setStatus(caught.code === 'denied' ? 'denied' : caught.code === 'unsupported' ? 'unsupported' : 'error')
-        setError(caught.message)
-      } else {
-        setStatus('error')
-        setError('マイクを開始できませんでした。')
-      }
+      showFailure(caught)
     } finally {
       startingRef.current = false
+    }
+  }, [showFailure])
+
+  useEffect(() => {
+    if (!isCurrentIosStandalone()) return
+
+    const requireFreshActivation = () => {
+      if (!wasHiddenRef.current || document.visibilityState !== 'visible') return
+      wasHiddenRef.current = false
+      const current = sessionRef.current
+      if (!current) return
+
+      sessionRef.current = null
+      streamRef.current = current.stream
+      setSession(null)
+      setStatus('needs-activation')
+      setError('ホーム画面版の音声解析を再開するには、一度タップしてください。')
+      void current.closeAudio()
+    }
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        wasHiddenRef.current = true
+        return
+      }
+      requireFreshActivation()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibility)
+    window.addEventListener('pageshow', requireFreshActivation)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('pageshow', requireFreshActivation)
     }
   }, [])
 
@@ -60,8 +124,14 @@ export function useMicrophone(): MicrophoneController {
     return () => {
       mountedRef.current = false
       const current = sessionRef.current
+      const pendingStream = streamRef.current
       sessionRef.current = null
-      if (current) void current.close()
+      streamRef.current = null
+      if (current) {
+        void current.close()
+      } else {
+        pendingStream?.getTracks().forEach((track) => track.stop())
+      }
     }
   }, [])
 
