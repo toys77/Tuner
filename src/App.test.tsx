@@ -1,10 +1,32 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+const microphone = vi.hoisted(() => ({
+  start: vi.fn(async () => undefined),
+  stop: vi.fn(async () => undefined),
+  status: 'idle' as const,
+  error: '',
+  session: null,
+}))
+
+vi.mock('./hooks/useMicrophone', () => ({ useMicrophone: () => microphone }))
+
 import App from './App'
 import { savePresetSelection } from './stores/presetStore'
 
 describe('preset selection restoration', () => {
+  beforeEach(() => microphone.start.mockClear())
   afterEach(() => localStorage.clear())
+
+  it('starts the microphone automatically once and keeps it across page navigation', async () => {
+    render(<App />)
+    await waitFor(() => expect(microphone.start).toHaveBeenCalledOnce())
+
+    fireEvent.click(screen.getByRole('button', { name: /PRESETS/ }))
+    fireEvent.click(screen.getByRole('button', { name: /SETTINGS/ }))
+    fireEvent.click(screen.getByRole('button', { name: /TUNER/ }))
+    expect(microphone.start).toHaveBeenCalledOnce()
+  })
 
   it('restores the saved mode and keeps the Presets page selection synchronized', () => {
     localStorage.clear()

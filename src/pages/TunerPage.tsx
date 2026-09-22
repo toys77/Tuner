@@ -4,7 +4,7 @@ import { NoteDisplay } from '../components/NoteDisplay'
 import { PresetSelector } from '../components/PresetSelector'
 import { StatusLabel } from '../components/StatusLabel'
 import { TuningMeter } from '../components/TuningMeter'
-import { useMicrophone, type MicrophoneStatus } from '../hooks/useMicrophone'
+import type { MicrophoneController, MicrophoneStatus } from '../hooks/useMicrophone'
 import { usePitchDetection } from '../hooks/usePitchDetection'
 import { useReferenceTone } from '../hooks/useReferenceTone'
 import { useWakeLock } from '../hooks/useWakeLock'
@@ -19,6 +19,7 @@ import { createPitchReading } from '../utils/pitchReading'
 import { getTunerFeedback } from '../utils/tunerFeedback'
 
 interface TunerPageProps {
+  microphone: MicrophoneController
   settings: AppSettings
   mode: TunerMode
   preset: TuningPreset | null
@@ -63,8 +64,7 @@ export function MicrophonePrompt({ status, error, onStart }: { status: Microphon
   )
 }
 
-export function TunerPage({ settings, mode, preset, availablePresets, selectedStringId, onModeChange, onPresetSelect, onViewAllPresets, onStringChange, onOpenSettings }: TunerPageProps) {
-  const microphone = useMicrophone()
+export function TunerPage({ microphone, settings, mode, preset, availablePresets, selectedStringId, onModeChange, onPresetSelect, onViewAllPresets, onStringChange, onOpenSettings }: TunerPageProps) {
   const detection = usePitchDetection(microphone.session, settings)
   const tone = useReferenceTone()
   const wakeLock = useWakeLock(settings.wakeLock && microphone.status === 'listening')

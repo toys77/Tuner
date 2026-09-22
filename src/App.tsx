@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { BottomNavigation, type AppPage } from './components/BottomNavigation'
+import { useMicrophone } from './hooks/useMicrophone'
 import { MODE_DEFAULT_PRESET, DEFAULT_PRESETS } from './presets/defaultPresets'
 import { PresetsPage } from './pages/PresetsPage'
 import { SettingsPage } from './pages/SettingsPage'
@@ -11,6 +12,8 @@ import type { TunerMode } from './types/tuner'
 
 export default function App() {
   const [page, setPage] = useState<AppPage>('tuner')
+  const microphone = useMicrophone()
+  const autoStartAttempted = useRef(false)
   const [settings, setSettings] = useState(loadSettings)
   const [customPresets, setCustomPresets] = useState(loadCustomPresets)
   const [initialSelection] = useState(loadPresetSelection)
@@ -19,6 +22,12 @@ export default function App() {
   const [selectedStringId, setSelectedStringId] = useState<string | null>(initialSelection.selectedStringId)
   const allPresets = useMemo(() => [...DEFAULT_PRESETS, ...customPresets], [customPresets])
   const activePreset = allPresets.find((item) => item.id === activePresetId) ?? null
+
+  useEffect(() => {
+    if (autoStartAttempted.current) return
+    autoStartAttempted.current = true
+    void microphone.start()
+  }, [microphone.start])
 
   useEffect(() => {
     saveSettings(settings)
@@ -68,7 +77,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <div className="background-grid" aria-hidden="true" />
-      {page === 'tuner' && <TunerPage settings={settings} mode={mode} preset={activePreset} availablePresets={allPresets} selectedStringId={selectedStringId} onModeChange={changeMode} onPresetSelect={selectPreset} onViewAllPresets={() => setPage('presets')} onStringChange={(id) => { setSelectedStringId(id); if (settings.autoString) setSettings({ ...settings, autoString: false }) }} onOpenSettings={() => setPage('settings')} />}
+      {page === 'tuner' && <TunerPage microphone={microphone} settings={settings} mode={mode} preset={activePreset} availablePresets={allPresets} selectedStringId={selectedStringId} onModeChange={changeMode} onPresetSelect={selectPreset} onViewAllPresets={() => setPage('presets')} onStringChange={(id) => { setSelectedStringId(id); if (settings.autoString) setSettings({ ...settings, autoString: false }) }} onOpenSettings={() => setPage('settings')} />}
       {page === 'presets' && <PresetsPage customPresets={customPresets} activePresetId={activePresetId} onCustomPresetsChange={setCustomPresets} onSelect={selectPreset} />}
       {page === 'settings' && <SettingsPage settings={settings} onChange={setSettings} onReset={() => setSettings(resetSettings())} />}
       <BottomNavigation page={page} onChange={setPage} />
