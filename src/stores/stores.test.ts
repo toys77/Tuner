@@ -44,7 +44,11 @@ describe('persistent stores', () => {
 
   it('sanitizes invalid persisted settings', () => {
     const storage = memoryStorage()
-    storage.set('quiet-tuner:settings:v1', { ...DEFAULT_SETTINGS, referencePitch: 999 })
-    expect(loadSettings(storage).referencePitch).toBe(466)
+    storage.set('quiet-tuner:settings:v1', { ...DEFAULT_SETTINGS, referencePitch: 999, inputSensitivity: 99 })
+    expect(loadSettings(storage)).toMatchObject({ referencePitch: 466, inputSensitivity: 4 })
+  })
+
+  it('uses a more responsive default input sensitivity', () => {
+    expect(loadSettings(memoryStorage()).inputSensitivity).toBe(1.5)
   })
 })

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { MicrophoneSession } from '../audio/microphone'
 import { PitchSmoother } from '../audio/smoothing'
-import { calculateRms, detectPitchYin } from '../audio/yinDetector'
+import { calculateRms, detectPitchYin, type YinOptions } from '../audio/yinDetector'
 import type { AppSettings, DetectorResult, InputStatus } from '../types/tuner'
 
 interface DetectionState {
@@ -12,13 +12,19 @@ interface DetectionState {
 
 const INITIAL_STATE: DetectionState = { result: null, rms: 0, inputStatus: 'no-input' }
 
-function classifyInput(rms: number, sensitivity: number): InputStatus {
+export function classifyInput(rms: number, sensitivity: number): InputStatus {
   if (rms >= 0.99) return 'clipping'
   const adjusted = rms * sensitivity
-  if (adjusted < 0.0025) return 'no-input'
-  if (adjusted < 0.01) return 'low'
+  if (adjusted < 0.0005) return 'no-input'
+  if (adjusted < 0.006) return 'low'
   if (adjusted < 0.22) return 'ok'
   return 'high'
+}
+
+export function detectionOptions(inputStatus: InputStatus): YinOptions {
+  return inputStatus === 'low'
+    ? { threshold: 0.2, minClarity: 0.65 }
+    : { threshold: 0.16, minClarity: 0.68 }
 }
 
 export function usePitchDetection(session: MicrophoneSession | null, settings: AppSettings): DetectionState {
@@ -38,17 +44,14 @@ export function usePitchDetection(session: MicrophoneSession | null, settings: A
 
     const analyze = (now: number) => {
       if (!active) return
-      if (now - lastAnalysis >= 55) {
+      if (now - lastAnalysis >= 40) {
         lastAnalysis = now
         session.analyser.getFloatTimeDomainData(buffer)
         const rms = calculateRms(buffer)
         const inputStatus = classifyInput(rms, settings.inputSensitivity)
         let result: DetectorResult | null = null
         if (inputStatus !== 'no-input' && inputStatus !== 'clipping') {
-          const raw = detectPitchYin(buffer, session.context.sampleRate, {
-            threshold: 0.14,
-            minClarity: inputStatus === 'low' ? 0.82 : 0.72,
-          })
+          const raw = detectPitchYin(buffer, session.context.sampleRate, detectionOptions(inputStatus))
           if (raw) result = smoother.push(raw, settings.smoothing, now)
         }
         if (!result && !smoother.isSilent(settings.silenceTimeout, now)) {

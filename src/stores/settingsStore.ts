@@ -6,7 +6,7 @@ export const SETTINGS_KEY = 'quiet-tuner:settings:v1'
 export const DEFAULT_SETTINGS: AppSettings = {
   referencePitch: 440,
   tolerance: { inTune: 3, near: 5, slight: 15 },
-  inputSensitivity: 1,
+  inputSensitivity: 1.5,
   theme: 'light',
   autoString: true,
   accidental: 'sharp',
@@ -28,7 +28,7 @@ function sanitize(settings: AppSettings): AppSettings {
     ...settings,
     referencePitch: Math.min(466, Math.max(415, Math.round(settings.referencePitch ?? 440))),
     tolerance: { ...DEFAULT_SETTINGS.tolerance, ...settings.tolerance },
-    inputSensitivity: Math.min(2, Math.max(0.5, settings.inputSensitivity ?? 1)),
+    inputSensitivity: Math.min(4, Math.max(0.5, settings.inputSensitivity ?? DEFAULT_SETTINGS.inputSensitivity)),
     smoothing: Math.min(0.9, Math.max(0.15, settings.smoothing ?? 0.55)),
     silenceTimeout: Math.min(2000, Math.max(300, settings.silenceTimeout ?? 900)),
   }
